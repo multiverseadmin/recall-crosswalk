@@ -1,0 +1,114 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CarsMultiverse recall record",
+    "version": "1.0.0",
+    "description": "Vehicle safety recalls from four national registers, and the cross-border matches between them on the manufacturer own campaign code. Free, no key, no rate limit. The filings belong to the regulators; the matching is ours and may be reused with attribution.",
+    "license": {
+      "name": "CC BY 4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.carsmultiverse.com"
+    }
+  ],
+  "externalDocs": {
+    "url": "https://carsmultiverse.com/data/",
+    "description": "What the data is and what it cannot tell you"
+  },
+  "paths": {
+    "/v1/crosswalk": {
+      "get": {
+        "summary": "Every recall we can prove appears in more than one national register, matched on the manufacturer own campaign code. The dataset nobody else publishes.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/v1/canada": {
+      "get": {
+        "summary": "Transport Canada Vehicle Recalls Database as held here: counts, coverage dates, and how far through the file the reader has got.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/v1/europe": {
+      "get": {
+        "summary": "EU Safety Gate weekly reports as read here: how many of them, how many alerts, and how much of the archive is still outstanding.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/v1/europe/alerts": {
+      "get": {
+        "summary": "Every EU Safety Gate motor-vehicle alert held here, with its case number and a link to the Commission page for it.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/v1/canada-and-america": {
+      "get": {
+        "summary": "The Canadian and American filing dates set against each other: who told drivers first, and by how long.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/v1/europe-and-america": {
+      "get": {
+        "summary": "The same comparison for Europe and America.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/v1/crosswalk.csv": {
+      "get": {
+        "summary": "The cross-border crosswalk as CSV, one row per recall.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/csv": {}
+            }
+          }
+        }
+      }
+    }
+  }
+}

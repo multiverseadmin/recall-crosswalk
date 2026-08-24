@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: Vehicle safety recalls matched across national registers on the manufacturer code
+message: If you use this dataset, please cite it.
+type: dataset
+authors:
+  - name: CarsMultiverse
+    website: "https://carsmultiverse.com"
+abstract: >-
+  Vehicle safety recalls that appear in more than one country register, matched on the
+  manufacturer own campaign code after identical normalisation. Joins the United States
+  (NHTSA), Canada (Transport Canada) and the European Union (Commission Safety Gate).
+  2100 recalls appear in more than one register. Nothing is paired on brand and date.
+keywords:
+  - vehicle safety
+  - product recalls
+  - NHTSA
+  - Transport Canada
+  - EU Safety Gate
+  - open data
+  - cross-border
+license: CC-BY-4.0
+url: "https://carsmultiverse.com/data/"
+repository-code: "https://github.com/carsmultiverse/recall-crosswalk"
