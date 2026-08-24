@@ -5,6 +5,11 @@ type: dataset
 authors:
   - name: CarsMultiverse
     website: "https://carsmultiverse.com"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.22087136
+    description: The permanent deposit of this dataset
+doi: 10.5281/zenodo.22087136
 abstract: >-
   Vehicle safety recalls that appear in more than one country register, matched on the
   manufacturer own campaign code after identical normalisation. Joins the United States
@@ -21,3 +26,4 @@ keywords:
 license: CC-BY-4.0
 url: "https://carsmultiverse.com/data/"
 repository-code: "https://github.com/carsmultiverse/recall-crosswalk"
+date-released: 2026-08-24

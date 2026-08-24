@@ -86,6 +86,20 @@ Or take the CSV straight from the edge, which flattens it for you:
 curl -s https://api.carsmultiverse.com/v1/crosswalk.csv -o crosswalk.csv
 ```
 
+## Citation
+
+The dataset is deposited and has a permanent identifier, so it can be cited in work
+that outlives this repository:
+
+> CarsMultiverse (2026). *Vehicle safety recalls matched across national registers on
+> the manufacturer’s own campaign code.* Zenodo. https://doi.org/10.5281/zenodo.22087136
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22087136.svg)](https://doi.org/10.5281/zenodo.22087136)
+
+The deposit is a **fixed snapshot**, which is what a citation needs. The copy served
+from the API is **rebuilt continuously**, which is what a reader needs. The two are
+meant to differ, and the deposit records the date it was taken.
+
 ## Licence
 
 > The filings belong to the regulators named above. The matching is ours and may be reused with attribution to carsmultiverse.com.
