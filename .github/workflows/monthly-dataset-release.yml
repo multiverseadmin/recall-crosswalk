@@ -79,7 +79,7 @@ jobs:
         run: python3 scripts/release_to_zenodo.py
 
       - name: Commit this month's copy
-        if: steps.release.outputs.released == 'true'
+        if: steps.release.outputs.changed == 'true'
         run: |
           git config user.name  'carsmultiverse-bot'
           git config user.email 'actions@users.noreply.github.com'
@@ -107,6 +107,8 @@ jobs:
         run: |
           if [ "${{ steps.release.outputs.released }}" = "true" ]; then
             echo "Published ${{ steps.release.outputs.doi }}" >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.release.outputs.reason }}" = "no-token" ]; then
+            echo "The dataset changed and was committed, but no DOI was minted because the ZENODO_TOKEN secret is not set." >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "The dataset had not changed. No DOI was minted." >> "$GITHUB_STEP_SUMMARY"
+            echo "The dataset had not changed. Nothing was committed and no DOI was minted." >> "$GITHUB_STEP_SUMMARY"
           fi
