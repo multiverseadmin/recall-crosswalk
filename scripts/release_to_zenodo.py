@@ -156,6 +156,11 @@ def main():
 
     print(json.dumps(digests, indent=2), flush=True)
 
+    # Whether the data moved is a separate fact from whether it was deposited.
+    # The commit step needs the first; only the deposit needs the second.
+    with open(os.environ.get("GITHUB_OUTPUT", os.devnull), "a") as fh:
+        fh.write("changed=" + ("true" if changed else "false") + "\n")
+
     if not changed:
         print("The dataset is byte identical to the last release. Nothing to publish.")
         with open(os.environ.get("GITHUB_OUTPUT", os.devnull), "a") as fh:
@@ -163,10 +168,12 @@ def main():
         return 0
 
     if not token:
-        print("Data changed and was committed, but ZENODO_TOKEN is not set, "
-              "so no deposit was made.", file=sys.stderr)
+        print("The dataset changed and has been committed, but ZENODO_TOKEN is not "
+              "set, so no deposit was made. Add the secret to publish a DOI.",
+              file=sys.stderr)
         with open(os.environ.get("GITHUB_OUTPUT", os.devnull), "a") as fh:
             fh.write("released=false\n")
+            fh.write("reason=no-token\n")
         return 0
 
     try:
