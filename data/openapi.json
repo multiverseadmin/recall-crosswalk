@@ -1,0 +1,249 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "CarsMultiverse - the recall record",
+        "version": "1.0.0",
+        "summary": "Vehicle safety recalls across five national registers, and whether a notice was reworded after it was published.",
+        "description": "Two things here are not published anywhere else.\n\n1. THE CROSSWALK. Recalls proven to appear in more than one country's register, matched on the manufacturer's own campaign code after identical normalisation. No regulator holds more than its own register. Nothing is paired on brand and date.\n\n2. THE REWRITE RECORD. Recall notices are edited after publication and the registers keep no public history. This site re-reads the wording and keeps every version, so it can say what a notice said before, what it says now, and when each reading was taken.\n\nEverything is CC BY 4.0. Credit carsmultiverse.com. The crosswalk has a DOI: 10.5281/zenodo.22087135.",
+        "license": {
+            "name": "CC BY 4.0",
+            "identifier": "CC-BY-4.0"
+        },
+        "contact": {
+            "url": "https://carsmultiverse.com/data/"
+        }
+    },
+    "externalDocs": {
+        "description": "How the matching rule works, and what it deliberately does not claim",
+        "url": "https://carsmultiverse.com/data/"
+    },
+    "x-doi": "10.5281/zenodo.22087135",
+    "x-cite": "CarsMultiverse (2026). Vehicle safety recalls matched across national registers on the manufacturer own campaign code. Zenodo. https://doi.org/10.5281/zenodo.22087135",
+    "x-mcp": "https://carsmultiverse.com/wp-json/cmvmcp/v1/mcp",
+    "x-feed": "https://carsmultiverse.com/feed/rewrites/",
+    "servers": [
+        {
+            "url": "https://api.carsmultiverse.com",
+            "description": "The dataset API"
+        },
+        {
+            "url": "https://carsmultiverse.com",
+            "description": "The site, which also answers the rewrite questions"
+        }
+    ],
+    "paths": {
+        "/v1/crosswalk": {
+            "get": {
+                "operationId": "crosswalk",
+                "summary": "Recalls that appear in more than one national register",
+                "description": "The dataset nobody else publishes. Matched on the manufacturer's own campaign code, not on brand and date.",
+                "servers": [
+                    {
+                        "url": "https://api.carsmultiverse.com"
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Matched recalls, each with the campaign code and the registers it appears in."
+                    }
+                }
+            }
+        },
+        "/v1/canada": {
+            "get": {
+                "operationId": "canada",
+                "summary": "Transport Canada vehicle recalls as held here",
+                "servers": [
+                    {
+                        "url": "https://api.carsmultiverse.com"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Counts, coverage dates, and how far through the file the reader has got."
+                    }
+                }
+            }
+        },
+        "/v1/europe": {
+            "get": {
+                "operationId": "europe",
+                "summary": "European Commission Safety Gate vehicle alerts as held here",
+                "servers": [
+                    {
+                        "url": "https://api.carsmultiverse.com"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Counts and coverage."
+                    }
+                }
+            }
+        },
+        "/v1/europe/alerts": {
+            "get": {
+                "operationId": "europeAlerts",
+                "summary": "Individual Safety Gate alerts",
+                "servers": [
+                    {
+                        "url": "https://api.carsmultiverse.com"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Alerts, each with the notifying country and the publication date."
+                    }
+                }
+            }
+        },
+        "/v1/canada-and-america": {
+            "get": {
+                "operationId": "canadaAndAmerica",
+                "summary": "The same recall in both registers, and which owners were told first",
+                "servers": [
+                    {
+                        "url": "https://api.carsmultiverse.com"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paired campaigns with both filing dates and the gap between them."
+                    }
+                }
+            }
+        },
+        "/v1/europe-and-america": {
+            "get": {
+                "operationId": "europeAndAmerica",
+                "summary": "The same recall in the American register and the European alert system",
+                "servers": [
+                    {
+                        "url": "https://api.carsmultiverse.com"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paired campaigns with both dates."
+                    }
+                }
+            }
+        },
+        "/v1/crosswalk.csv": {
+            "get": {
+                "operationId": "crosswalkCsv",
+                "summary": "The crosswalk as CSV",
+                "servers": [
+                    {
+                        "url": "https://api.carsmultiverse.com"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "CSV, one row per matched recall."
+                    }
+                }
+            }
+        },
+        "/wp-json/cmvembed/v1/card": {
+            "get": {
+                "operationId": "recallCard",
+                "summary": "What we hold for one campaign, including whether it was reworded",
+                "description": "Note the three-valued answer. `rewritten` is true, false, or null - and null is NOT a no. Null means the campaign sits outside the watched set, so no comparison has been made. Not knowing and knowing it did not happen are different facts, and an agent that collapses them will state something false.\n\nWhere a rewrite is held, `rewrites[].first_read` is when we read the earlier wording and `rewrites[].read` is when we read the changed wording. The change happened between those two times.",
+                "servers": [
+                    {
+                        "url": "https://carsmultiverse.com"
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "campaign",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "25V686"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The record for one campaign.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "campaign": "26V451",
+                                    "watched": true,
+                                    "rewritten": true,
+                                    "rewrites": [
+                                        {
+                                            "field": "remedy",
+                                            "first_read": "2026-08-25T04:31:57+00:00",
+                                            "read": "2026-08-25T10:18:53+00:00"
+                                        }
+                                    ],
+                                    "official": "https://www.nhtsa.gov/recalls?nhtsaId=26V451",
+                                    "licence": "CC BY 4.0 - credit carsmultiverse.com"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/wp-json/cmvembed/v1/latest": {
+            "get": {
+                "operationId": "latestRewrites",
+                "summary": "The running feed of notices reworded after publication",
+                "description": "The same record as https://carsmultiverse.com/feed/rewrites/, as JSON. This is the part of the site that exists nowhere else.",
+                "servers": [
+                    {
+                        "url": "https://carsmultiverse.com"
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "maximum": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Most recent rewrites, newest first, each with both reading times."
+                    }
+                }
+            }
+        },
+        "/wp-json/cmvth/v1/revisions": {
+            "get": {
+                "operationId": "revisions",
+                "summary": "Every held revision, with the wording before and after",
+                "description": "The full text of both versions, not a summary of the difference. This is what makes the claim checkable rather than assertable.",
+                "servers": [
+                    {
+                        "url": "https://carsmultiverse.com"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Revisions, each with before, after, before_read and after_read. The field named 'summary' here is the defect description - the same text the /wp-json/cmvreg/v1/changes endpoint calls 'defect'. One field, two names, verified identical; do not treat a change reported by both as two changes."
+                    }
+                }
+            }
+        }
+    }
+}
