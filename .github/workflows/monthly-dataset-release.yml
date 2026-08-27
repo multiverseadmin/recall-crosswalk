@@ -1,0 +1,112 @@
+# ---------------------------------------------------------------------------
+# The crosswalk, deposited every month without anyone remembering to do it
+# ---------------------------------------------------------------------------
+#
+# WHAT IT DOES
+#   1. Pulls the current crosswalk from the live API, as CSV and JSON, plus the
+#      OpenAPI document that describes the endpoint.
+#   2. Commits them, so this repository becomes a month by month history of the
+#      dataset. That history is itself a record nobody else holds: it shows when
+#      a cross border match first appeared, which is a different fact from when
+#      either regulator published.
+#   3. Publishes a new version of the existing Zenodo deposit, keeping concept
+#      DOI 10.5281/zenodo.22087135 so every citation already printed still
+#      resolves.
+#
+# The website then catches up on its own: the WordPress side asks Zenodo once a
+# day which version is newest and reprints its citation accordingly. Nothing
+# here has to tell the site anything.
+#
+# WHAT IT REFUSES TO DO
+# It will not mint a DOI for a dataset that did not change. If the files come
+# back byte identical the run commits nothing and publishes nothing.
+#
+# SETUP, ONCE
+#   Settings > Secrets and variables > Actions > New repository secret
+#     Name:  ZENODO_TOKEN
+#     Value: a Zenodo personal access token with deposit:write and
+#            deposit:actions
+#   Nobody but GitHub and Zenodo ever sees that value.
+
+name: Monthly dataset release
+
+on:
+  schedule:
+    # 06:12 UTC on the first of the month. Off the hour on purpose: scheduled
+    # jobs at :00 queue behind everyone else's.
+    - cron: '12 6 1 * *'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version label (YYYY-MM-DD). Defaults to today.'
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dataset-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Decide the version label
+        id: label
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fetch the dataset and deposit it if it moved
+        id: release
+        env:
+          ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+          RELEASE_VERSION: ${{ steps.label.outputs.version }}
+        run: python3 scripts/release_to_zenodo.py
+
+      - name: Commit this month's copy
+        if: steps.release.outputs.released == 'true'
+        run: |
+          git config user.name  'carsmultiverse-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add data/
+          if git diff --cached --quiet; then
+            echo 'Nothing staged.'
+          else
+            git commit -m "Crosswalk ${{ steps.label.outputs.version }} (${{ steps.release.outputs.doi }})"
+            git push
+          fi
+
+      - name: Tag the release
+        if: steps.release.outputs.released == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ steps.label.outputs.version }}" \
+            --title "Crosswalk ${{ steps.label.outputs.version }}" \
+            --notes "Deposited at https://doi.org/${{ steps.release.outputs.doi }}
+
+          Cited as https://doi.org/10.5281/zenodo.22087135, which always resolves to this, the newest version." \
+            data/crosswalk.csv data/crosswalk.json
+
+      - name: Say what happened
+        run: |
+          if [ "${{ steps.release.outputs.released }}" = "true" ]; then
+            echo "Published ${{ steps.release.outputs.doi }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "The dataset had not changed. No DOI was minted." >> "$GITHUB_STEP_SUMMARY"
+          fi
