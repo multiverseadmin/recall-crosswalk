@@ -1,0 +1,99 @@
+# ---------------------------------------------------------------------------
+# The files in this repository, kept level with the live record
+# ---------------------------------------------------------------------------
+#
+# WHY THIS EXISTS
+#   The monthly workflow deposits a citable version and writes data/. The files
+#   at the root of this repository - the ones the README tells a reader to start
+#   with - and the figures printed in the README itself were only ever written
+#   by hand, so they drifted: on 4 September 2026 the README said 2100 recalls
+#   cross a border, built 24 August, while the live record held 2057. The gap
+#   was the brand agreement gate added on 1 September, which removed matches on
+#   codes that two different manufacturers happened to share. A figure printed
+#   beside a link to a live API has to be that API's figure.
+#
+#   So once a day: fetch the crosswalk, write it as JSON and CSV at the root and
+#   under data/, print the figures the API itself reports into the README table,
+#   and commit only if something actually moved.
+#
+#   No Zenodo deposit happens here. Citable versions stay monthly, and stay the
+#   monthly workflow's job: a DOI a day would be worth nothing to cite.
+# ---------------------------------------------------------------------------
+
+name: Daily refresh
+
+on:
+  schedule:
+    - cron: '25 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Fetch the crosswalk as the API serves it
+        run: |
+          set -euo pipefail
+          curl -sSfL --retry 3 --retry-delay 5 \
+            -H 'User-Agent: recall-crosswalk daily refresh' \
+            https://api.carsmultiverse.com/v1/crosswalk -o fetched.json
+          python3 -c "import json,sys; d=json.load(open('fetched.json')); sys.exit(0 if isinstance(d.get('recalls'), list) and d.get('crossing') else 1)"
+
+      - name: Write the files
+        run: |
+          set -euo pipefail
+          mv fetched.json crosswalk.json
+          node to-csv.js crosswalk.json > crosswalk.csv
+          mkdir -p data
+          cp crosswalk.json data/crosswalk.json
+          cp crosswalk.csv data/crosswalk.csv
+
+      - name: Print the figures into the README
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, re
+
+          d = json.load(open('crosswalk.json'))
+          crossing = str(int(d['crossing']))
+          built = str(d.get('built', '')).strip()
+
+          md = open('README.md', encoding='utf-8').read()
+
+          md = re.sub(
+              r'(\| Recalls appearing in more than one register \| )\*\*[^*]*\*\*',
+              r'\g<1>**' + crossing + '**',
+              md,
+          )
+
+          if built:
+              md = re.sub(r'(\| Built \| )[^|]*', r'\g<1>' + built + ' ', md)
+
+          open('README.md', 'w', encoding='utf-8').write(md)
+          PY
+
+      - name: Commit if anything moved
+        run: |
+          set -euo pipefail
+          git config user.name 'carsmultiverse-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add README.md crosswalk.json crosswalk.csv data/crosswalk.json data/crosswalk.csv
+          if git diff --cached --quiet; then
+            echo 'Nothing moved today.'
+          else
+            git commit -m 'Refresh the crosswalk from the live record'
+            git push
+          fi
+
