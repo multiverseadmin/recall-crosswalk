@@ -8,9 +8,9 @@ thing they share: the code the *manufacturer* used. This dataset joins on that.
 
 | | |
 |---|---|
-| Recalls appearing in more than one register | **2057** |
+| Recalls appearing in more than one register | **2058** |
 | Registers joined | United States, Canada, European Union |
-| Built | 2026-09-10T04:32:30+00:00 |
+| Built | 2026-09-11T04:32:07+00:00 |
 | Live copy | https://api.carsmultiverse.com/v1/crosswalk |
 
 No regulator publishes this, because no regulator holds more than its own register.
